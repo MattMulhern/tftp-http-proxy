@@ -12,21 +12,27 @@ import (
 
 const httpBaseUrlDefault = "http://127.0.0.1/tftp"
 const tftpTimeoutDefault = 5 * time.Second
+const httpReqAppendFilenameDefault = false
 
 var globalState = struct {
-	httpBaseUrl	string
-	httpClient	*http.Client
+	httpBaseUrl			string
+	httpAppendFilename	bool
+	httpClient			*http.Client
+
 }{
-	httpBaseUrl:	httpBaseUrlDefault,
-	httpClient:	nil,
+	httpBaseUrl:		httpBaseUrlDefault,
+	httpAppendFilename:	httpReqAppendFilenameDefault,
+	httpClient:			nil,
 }
 
 func tftpReadHandler(filename string, rf io.ReaderFrom) error {
 	raddr := rf.(tftp.OutgoingTransfer).RemoteAddr() // net.UDPAddr
 
 	log.Printf("INFO: New TFTP request (%s) from %s", filename, raddr.IP.String())
-
 	uri := globalState.httpBaseUrl
+	if globalState.httpAppendFilename == true {
+		uri = fmt.Sprintf("%s%s", globalState.httpBaseUrl, filename)
+	}
 
 	req, err := http.NewRequest("GET", uri, nil)
 	if err != nil {
@@ -69,11 +75,13 @@ func tftpReadHandler(filename string, rf io.ReaderFrom) error {
 func main() {
 	httpBaseUrlPtr := flag.String("http-base-url", httpBaseUrlDefault, "HTTP base URL")
 	tftpTimeoutPtr := flag.Duration("tftp-timeout", tftpTimeoutDefault, "TFTP timeout")
+	httpAppendPtr := flag.Bool("http-append-filename", httpReqAppendFilenameDefault, "Append filename to HTTP request.")
 
 	flag.Parse()
 
 	globalState.httpBaseUrl = *httpBaseUrlPtr
 	globalState.httpClient = &http.Client{}
+	globalState.httpAppendFilename = *httpAppendPtr
 
 	s := tftp.NewServer(tftpReadHandler, nil)
 	s.SetTimeout(*tftpTimeoutPtr)
