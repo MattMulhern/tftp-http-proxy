@@ -6,8 +6,8 @@ DESTDIR?=/sbin
 NAME=${PROG}
 DIST=.el7
 SPECFILE="${NAME}.spec"
-RELEASE?=dev
-VERSION?=0.1
+RELEASE?=1
+VERSION?=0.3
 
 GO?=go
 GOPATH = $(CURDIR)/.gopath
