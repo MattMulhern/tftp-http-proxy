@@ -7,7 +7,7 @@ NAME=${PROG}
 DIST=.el7
 SPECFILE="${NAME}.spec"
 RELEASE?=1
-VERSION?=0.3
+VERSION?=0.4
 
 GO?=go
 GOPATH = $(CURDIR)/.gopath
