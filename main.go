@@ -26,9 +26,10 @@ var globalState = struct {
 }
 
 func tftpReadHandler(filename string, rf io.ReaderFrom) error {
+	log.SetFlags(0)
 	raddr := rf.(tftp.OutgoingTransfer).RemoteAddr() // net.UDPAddr
 
-	log.Printf("INFO: New TFTP request (%s) from %s", filename, raddr.IP.String())
+	log.Printf("RRQ from %s filename %s", raddr.IP.String(), filename)
 	uri := globalState.httpBaseUrl
 	if globalState.httpAppendFilename == true {
 		uri = fmt.Sprintf("%s%s", globalState.httpBaseUrl, filename)
@@ -51,7 +52,7 @@ func tftpReadHandler(filename string, rf io.ReaderFrom) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusNotFound {
-		log.Printf("INFO: http FileNotFound response: %s", resp.Status)
+		log.Printf("ERR: http FileNotFound response: %s", resp.Status)
 		return fmt.Errorf("File not found")
 	} else if resp.StatusCode != http.StatusOK {
 		log.Printf("ERR: http request returned status %s", resp.Status)
